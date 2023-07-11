@@ -3,11 +3,8 @@ const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
 const pngToIco = require('png-to-ico');
-const { Registry } = require('rage-edit')
-//const RobloxReg = new Registry('HKCU\\\Software\\Roblox\\RobloxStudioBrowser\\roblox.com');
 const request = require('request');
 const {exec} = require('child_process');
-//const puppeteer = require('puppeteer'); 
 const crypto = require('crypto');
 const jsoning = require('jsoning');
 
@@ -42,26 +39,6 @@ async function getCookie(all = false){
 	if(operaookie) return operaookie;
 	if(braveCookie) return braveCookie;
 	
-	/*
-	return RobloxReg.get('.ROBLOSECURITY').then(entry => {
-		const data = {}
-	
-		entry.split(',').map(dataset => {
-		  const pairs = dataset.split('::')
-		  data[pairs[0].toLowerCase()] = pairs[1].substr(1, pairs[1].length - 2)
-		})
-	
-		if (data.cook === undefined && data.exp === undefined) {
-		  throw new Error('Couldn\'t get login cookie')
-		} else {
-		  if (new Date(data.exp).getTime() - Date.now() <= 0) {
-			throw new Error('Login cookie has expired')
-		  }
-		}
-	
-		return data.cook
-	})
-	*/
 }
 
 function showErrorWindow(str1,str2){
@@ -179,8 +156,6 @@ function findRobloxPath(dir=`${process.env.LOCALAPPDATA}\\Roblox\\Versions`){
  * @param {launchOptions} options 
  */
 async function launchDirectly(placeId,cookie,options){
-	//var shortcutData = shell.readShortcutLink(path.join('C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Roblox','Roblox Player.lnk')); //very bad idea
-	/// finding latest roblox version lol
 	var appPath = findRobloxPath()[0]
 	var authTicket = await getAuthTicket(cookie);
 	var launchtime = Date.now();
@@ -216,76 +191,18 @@ if (runArgs.length === 1 || runArgs.length > 3) {
 else if(runArgs.length){
 	console.log(process.argv)
 	getCookie().then(async(studioCookie)=>{
-
 		var robloxCookie = studioCookie;
 		if(runArgs.length === 3) robloxCookie = cookiesDB.get(runArgs[2]);
+
 		var id = runArgs[1].match(/\/(\d+)/)[1];
 		var privateServerLinkCode = runArgs[1].match(/privateServerLinkCode=(\S+)/)?.[1] || undefined;
-		var payload = (id) => Roblox.GameLauncher.joinMultiplayerGame(id);
-		if(runArgs[0]==='user') payload = (id) => Roblox.GameLauncher.followPlayerIntoGame(id);
-		if(runArgs[0]==='server') return launchDirectly(id,robloxCookie,{privateServerLinkCode: privateServerLinkCode}); //payload = (id,privateServerLinkCode) => Roblox.GameLauncher.joinPrivateGame(id, null, privateServerLinkCode);
+
+		if(runArgs[0]==='user') return process.exit(1); // TODO user shortcuts
+		if(runArgs[0]==='server') return launchDirectly(id,robloxCookie,{privateServerLinkCode: privateServerLinkCode});
 		if(runArgs[0]==='game') return launchDirectly(id,robloxCookie);
 		
-
-		const browser = await puppeteer.launch({
-			headless: false,
-			userDataDir: path.join(process.env.APPDATA,app.name,'chromiumUserData')
-			//executablePath: browserPath
-		})
-		const page = await browser.newPage();
-
-		//await page.setRequestInterception(true)
-
-		/*
-		page.on('request', (request) => {
-			console.log('>>', request.method(), request.url());
-			if(request.url().startsWith('https://auth.roblox.com/v1/authentication-ticket/')){
-				robot.keyTap("left");
-				robot.keyTap("enter");
-			}
-			request.continue()
-		})
-
-		page.on('dialog', async (dialog) => {
-			console.log(dialog.message());
-			await dialog.accept();
-		});
-		*/
-
-		await page.goto('https://roblox.com',{
-			waitUntil: 'networkidle0',
-		});
-		await page.evaluate((cook) => {
-			const d = new Date();
-			d.setTime(d.getTime() + (10950*24*60*60*1000));
-			let expires = "expires="+ d.toUTCString();
-			document.cookie = '.ROBLOSECURITY' + "=" + cook + ";" + expires + ";path=/;domain=.roblox.com";
-		},robloxCookie);
-		
-		await page.goto(runArgs[1].replace(/\?privateServerLinkCode=(\S+)/,''),{
-			waitUntil: 'networkidle0',
-		});
-		await page.evaluate(payload,id,privateServerLinkCode);
-		process.exit(1);
-		
 	});
-	/*
-	const deafultBrowserReg = new Registry('HKCU\\\SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\URLAssociations\\https\\UserChoice');
-	console.log('HKCU\\\SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\URLAssociations\\https\\UserChoice')
-	deafultBrowserReg.get('ProgId').then(browserId =>{
-		console.log(browserId);
-		const deafultBrowserPathReg = new Registry(`HKCR\\${browserId}\\shell\\open\\command`);
-		deafultBrowserPathReg.get('').then(async browserRunCommand =>{
-			const browserPath = browserRunCommand.match(/\"(.+)\" /)[1];
-			console.log(browserPath);
-			const browser = await puppeteer.launch({
-				headless: false
-				//executablePath: browserPath
-			})
-			await browser.goto(process.argv[2]);
-		})
-	})
-	*/
+    
 }
 else{
 	app.whenReady().then(createWindow)

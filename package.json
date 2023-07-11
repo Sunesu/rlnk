@@ -25,7 +25,6 @@
     "jsoning": "^0.13.23",
     "png-to-ico": "^2.1.4",
     "puppeteer-core": "^13.5.1",
-    "rage-edit": "^1.2.0",
     "request": "^2.88.2",
     "win-dpapi": "^1.1.0"
   }
