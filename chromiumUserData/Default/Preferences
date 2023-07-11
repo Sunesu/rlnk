@@ -1,0 +1,9 @@
+{
+    "protocol_handler": {
+        "allowed_origin_protocol_pairs": {
+            "https://www.roblox.com": {
+                "roblox-player": true
+            }
+        }
+    }
+}

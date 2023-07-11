@@ -1,0 +1,283 @@
+
+:root{
+    --primary: #dd00fa;
+    --secondary: #6909c2;
+}
+
+
+body{
+    margin: 0;
+    background: #26003b linear-gradient(0deg,#000000,#26003b);
+    /* font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    font-family: 'Roboto', cursive;
+    color: #fff;
+    color-scheme: light dark;
+    min-height: 100vh;
+}
+
+h1,p{
+    margin: 0;
+}
+
+h1{
+    font-size: 3.5em;
+}
+
+p{
+    font-size: 1.5em;
+    margin-bottom: 1rem;
+}
+
+header{
+    padding: 1rem;
+    height: 3rem;
+}
+
+header span{
+    vertical-align: super;
+}
+
+header > img{
+    margin-right: 1rem;
+}
+
+.rlnk-logo{
+    filter: invert(100%);
+}
+
+nav{
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-primary,
+.nav-secondary{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 3rem;
+}
+
+.nav-primary{
+    font-size: 2em;
+}
+
+.nav-secondary > *{
+    margin-left: 3rem;
+}
+
+a{
+    color: #fff;
+    text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
+}
+
+.flex-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-row > * {
+    margin-right: 1rem;
+}
+
+main{
+    width: 70%;
+    margin: 0 auto;
+    min-height: calc(100dvh - 5rem);
+}
+
+.flex-v-center{
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    justify-content: center;
+}
+
+.darrow{
+    position: absolute;
+    bottom: 0rem;
+    left: calc(50% - 1.75rem);
+    display: inline-block;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: linear-gradient(0deg,var(--primary),#000000);
+    clip-path: url('#darrow-path');
+    animation: 2s arrowani infinite alternate ease-in-out;
+    cursor: pointer;
+}
+
+.download-button{
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: linear-gradient(45deg,var(--secondary),var(--primary));
+    background-size: 150%;
+    transition: .2s linear;
+}
+
+.download-button:hover{
+    background-position: -3rem 0;
+    text-decoration: none;
+    box-shadow: 0 0 5px var(--primary);
+    scale: 1.05;
+}
+
+.h-center-container{
+    width: 80%;
+    margin: 10rem auto;
+    justify-content: space-around;
+}
+
+.h-center-container > *{
+   flex: 1;
+   margin: 0 3rem;
+   /* background-color: #190027; */
+   /* border-radius: 1em; */
+   /* padding: 1rem; */
+   /* box-shadow: 0 0 8em 8em #190027; */
+}
+
+.h-center-container > * > * {
+    text-align: center;
+}
+
+footer{
+    padding: 1rem 0;
+    background-color: #26003b;
+    color: #757575;
+    text-align: center;
+}
+
+/* app specific css */
+.center{
+    margin: 10px 0 0 50%;
+    transform: translateX(-50%);
+}
+
+.setting{
+    margin: 0;
+    width: calc(100% - 40%);
+    padding: 10px 0 10px 20%;
+}
+
+.right{
+    float: right;
+}
+
+select option {
+    background: #202020;
+    color: #fff;
+}
+
+input[type=text],
+select{
+    display: inline-block;
+    border-radius: 5px;
+    background: linear-gradient(45deg,var(--secondary),var(--primary));
+    background-size: 400% 400%;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    width: 40%;
+    height: 2rem;
+    float: right;
+    transition: linear 0.2s;
+}
+
+button{
+    background: linear-gradient(45deg,var(--secondary),var(--primary));
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    color: #ffffff;
+    width: 8rem;
+    height: 2rem;
+    transition: linear 0.2s;
+}
+
+button:hover,
+input[type=text]:hover,
+select:hover{
+    background-position: -8rem 0;
+}
+
+#accountsManager{
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+#goBack{
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 2rem;
+}
+
+#accounts{
+    margin: 10px auto;
+    width: 80%;
+}
+
+#accounts div{
+    height: 2rem;
+    margin: 0.5rem 0;
+    border-radius: 5px;
+    transition: 0.2s linear;
+}
+
+#accounts > div:hover > span{
+    /* filter: opacity(0.6); */
+    text-decoration: underline;
+    transition: 0.2s linear;
+}
+
+#accounts > div > button > span{
+    vertical-align: middle;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .5s;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
+}
+
+@keyframes arrowani {
+    from {
+        /* background-size: 100%; */
+        background-position: 0 0;
+    }
+    
+    to {
+        background-position: 0 1.5rem;
+    }
+}
+
+
+@media (max-width: 800px) {
+    .rlnk-logo[height="200"]{
+        display: none;
+    }
+
+    .flex-row{
+        flex-direction: column;
+    }
+
+    .flex-row > * {
+        margin-bottom: 6rem;
+    }
+
+    main{
+        width: 80%;
+    }
+}

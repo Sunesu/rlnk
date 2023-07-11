@@ -1,0 +1,32 @@
+{
+  "name": "rlnk",
+  "productName": "rlnk",
+  "version": "1.0.0",
+  "description": "Shortcuts for Roblox games",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "rb": ".\\node_modules\\.bin\\electron-rebuild.cmd",
+    "build": "electron-packager ./ rlnk --platform=win32 --icon img/icon.ico --arch=x64 ",
+    "buildlinux": "electron-packager ./ rlnk --platform=linux --arch=x64 --icon img/icon.ico --asar",
+    "makeico": "png-to-ico icon.png > icon.ico"
+  },
+  "author": "Sunesu",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^17.1.2",
+    "electron-rebuild": "^3.2.9"
+  },
+  "dependencies": {
+    "axios": "^0.26.1",
+    "chrome-cookies-secure": "^2.0.0",
+    "electron-packager": "^15.4.0",
+    "jsoning": "^0.13.23",
+    "png-to-ico": "^2.1.4",
+    "puppeteer-core": "^13.5.1",
+    "rage-edit": "^1.2.0",
+    "request": "^2.88.2",
+    "win-dpapi": "^1.1.0"
+  }
+}
