@@ -1,7 +1,5 @@
 # rlnk
-Shortcuts for Roblox games
-
-Ever wanted to join your favorite roblox game straight from your desktop? Now you can!
+An Electron app that allows you to create shortcuts for your favorite roblox games.
 
 ## Features
 - Easy to use
@@ -12,6 +10,7 @@ Ever wanted to join your favorite roblox game straight from your desktop? Now yo
   - private server
   - user *(coming soon)*
 - Ability to launch game via CLI: `/path/to/rlnk game;https://www.roblox.com/games/606849621/Jailbreak`
+- Nice account manager
 
 ## Installation
 Windows installer can be found on [our website](https://rlnk.app)
@@ -20,27 +19,42 @@ Windows installer can be found on [our website](https://rlnk.app)
 
 Clone the repository
 
-```bash
+```
 git clone https://github.com/Sunesu/rlnk.git
 ```
 
 cd into rlnk
 
-```bash
+```
 cd rlnk
 ```
 
 Install dependencies
 
-```bash
+```
 npm install
 ```
 
 and build
 
-```bash
+```
 npm run build
 ```
+
+## Roadmap
+- [ ] alternative .NET app for lower-end devices
+- [ ] user shortcuts
+- [ ] roblox studio shortcuts
+- [ ] Server filtering options for game shortcut:
+    - [ ] playercount:
+        - order `ascending`/`descending`/`random`
+        - `min` & `max` amount of players
+    - [ ] ping:
+        - same as players: customizable order, min & max value
+    - [ ] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId)
+- [ ] ability to remove an account from account manager
+- [ ] better error handling
+
 
 ## License
 
