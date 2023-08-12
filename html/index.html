@@ -21,7 +21,10 @@
         </div>
         <div class="setting">
             <label for="link">{{ type.charAt(0).toUpperCase()+type.substring(1) }} link</label>
-            <input type="text" name="link" id="link" v-model="link">
+            <div>
+                <input type="text" name="link" id="link" :placeholder="type == 'game' ? 'paste or...' : 'paste server link'" v-model="link" :class="{'width-50':(type=='game'),'width-100':(type!='game')}">
+                <button v-if="type=='game'" id="browseGames" @click="browseGames($event)" style="margin-left: .5rem; width: calc(50% - .5rem);">Browse</button>
+            </div>
         </div>
         <div class="setting">
             <label for="account">Account</label>
@@ -33,7 +36,10 @@
         <transition name="fade">
         <div class="setting" v-if="account=='custom'">
             <label for="cookie"><span style="color: red;">.ROBLOSECURITY</span> cookie</label>
-            <input type="text" name="cookie" id="cookie" v-model="cookie">
+            <div>
+                <input type="text" name="cookie" id="cookie" v-model="cookie" placeholder="paste or..." style="width: 50%;">
+                <button id="login" @click="login($event)" style="margin-left: .5rem; width: calc(50% - .5rem);">Log in</button>
+            </div>
         </div>
         </transition>
         <button class="center" id="create" @click="save($event)">Create</button>

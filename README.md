@@ -43,7 +43,9 @@ npm run build
 
 ## Roadmap
 - [x] alternative .NET app for lower-end devices -> [download here](https://rlnk.app/lite)
+- [x] ability to login instead of pasting an account cookie
 - [ ] user shortcuts
+- [ ] browser shortcuts
 - [ ] roblox studio shortcuts
 - [ ] Server filtering options for game shortcut:
     - [ ] playercount:

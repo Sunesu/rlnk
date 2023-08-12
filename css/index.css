@@ -173,7 +173,22 @@ select option {
     color: #fff;
 }
 
-input[type=text],
+.setting :nth-child(2){
+    float: right;
+    width: 40%;
+}
+
+input[type=text]{
+    box-sizing: border-box;
+    display: inline-block;
+    border-radius: 5px;
+    background-color: #000;
+    color: #ffffff;
+    height: 2rem;
+    outline: none;
+    border: 2px solid var(--secondary);
+}
+
 select{
     display: inline-block;
     border-radius: 5px;
@@ -183,9 +198,9 @@ select{
     border: none;
     outline: none;
     color: #ffffff;
-    width: 40%;
+    /* width: 40%; */
     height: 2rem;
-    float: right;
+    /* float: right; */
     transition: linear 0.2s;
 }
 
@@ -204,9 +219,17 @@ button{
 }
 
 button:hover,
-input[type=text]:hover,
+/* input[type=text]:hover, */
 select:hover{
     background-position: -8rem 0;
+}
+
+.width-50{
+    width: 50%;
+}
+
+.width-100{
+    width: 100%;
 }
 
 #accountsManager{

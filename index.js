@@ -66,7 +66,7 @@ function createWindow () {
 	// create main browser window
 	win = new BrowserWindow({
 		//titleBarStyle: 'hidden',
-		width: 600,
+		width: 650,
 		height: 800,
 		show: false,
 		backgroundColor: '#290933',
@@ -133,7 +133,7 @@ function findRobloxPath(dir=`${process.env.LOCALAPPDATA}\\Roblox\\Versions`){
 	var modifyTimesMs = fs.readdirSync(dir).map((val)=>{
 		var stat = fs.statSync(`${dir}\\${val}`)
 		if(!fs.existsSync(`${dir}\\${val}\\RobloxPlayerBeta.exe`)) return 0 //checking every folder for RobloxPlayerBeta.exe
-	    return stat.isDirectory() ? stat.mtime.getTime() : 0 // getting rid of potential files like RobloxStudioLauncherBeta.exe lol
+	    return stat.isDirectory() ? stat.mtime.getTime() : 0 // if val is a directory return time else 0
 	})
 	var latestModifyDateSoFar = Math.max(...modifyTimesMs)
 	var appPath = `${dir}\\${fs.readdirSync(dir)[modifyTimesMs.indexOf(latestModifyDateSoFar)]}\\RobloxPlayerBeta.exe`
@@ -261,6 +261,47 @@ async function checkAccountMetadata(id){
 	if(Date.now() > metadata.ts + 604800000) return undefined
 	return metadata
 }
+
+ipcMain.on('login', async function (event) {
+    session.defaultSession.cookies.remove('https://www.roblox.com', '.ROBLOSECURITY');
+    var robloxWin = new BrowserWindow({
+        width:  370,//screen.getPrimaryDisplay().size.width*0.2,
+        height: 550,//screen.getPrimaryDisplay().size.height*0.5,
+        alwaysOnTop: true
+    });
+    robloxWin.removeMenu();
+    robloxWin.loadURL('https://www.roblox.com/login');
+    robloxWin.webContents.executeJavaScript('document.title = "Add account"');
+
+    robloxWin.webContents.session.webRequest.onCompleted((d)=>{
+        for(const key in d.responseHeaders){
+            if(key == 'set-cookie'){
+                if (/.ROBLOSECURITY=([^;]+)/.test(d.responseHeaders[key].join(' '))){
+                    var extractedCookie  = d.responseHeaders[key].join(' ').match(/.ROBLOSECURITY=([^;]+)/)[1];
+                    robloxWin.close();
+                    win.webContents.send('loggedIn', extractedCookie); 
+                }
+            }
+        }
+    })
+});
+
+ipcMain.on('browseGames', async function (event) {
+    session.defaultSession.cookies.remove('https://www.roblox.com', '.ROBLOSECURITY');
+    var robloxWin = new BrowserWindow({
+        width: screen.getPrimaryDisplay().size.width*0.75,
+        height: screen.getPrimaryDisplay().size.height*0.75,
+    });
+    robloxWin.removeMenu();
+    robloxWin.loadURL('https://www.roblox.com/discover');
+
+    robloxWin.webContents.on('did-navigate',(e,url)=>{
+        if(url.startsWith("https://www.roblox.com/games/")){
+            robloxWin.close();
+            win.webContents.send('gameSelected', url.replace(/\?.+/,''));
+        }
+    })
+});
 
 ipcMain.on('setcookie', async function (event,cookie) {
 	session.defaultSession.cookies.remove('https://www.roblox.com', '.ROBLOSECURITY')

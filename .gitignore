@@ -1,7 +1,4 @@
 node_modules
-rlnk-win32-x64
-css/index_old.css
-img/icon_old.png
-index_old.js
-src/test.js
+tests
+build
 .vscode

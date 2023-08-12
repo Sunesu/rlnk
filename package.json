@@ -1,14 +1,14 @@
 {
   "name": "rlnk",
   "productName": "rlnk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shortcuts for Roblox games",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "rb": ".\\node_modules\\.bin\\electron-rebuild.cmd",
-    "build": "electron-packager ./ rlnk --platform=win32 --icon img/icon.ico --arch=x64 ",
+    "build": "electron-packager ./ rlnk --platform=win32 --icon img/icon.ico --arch=x64 --ignore=\"^/tests\" --out=build",
     "buildlinux": "electron-packager ./ rlnk --platform=linux --arch=x64 --icon img/icon.ico --asar",
     "makeico": "png-to-ico icon.png > icon.ico"
   },

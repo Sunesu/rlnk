@@ -5,7 +5,20 @@ contextBridge.exposeInMainWorld('ipc',ipcRenderer);
 ipcRenderer.on('Accounts',(event,accounts)=>{
     console.log(accounts);
     showAccounts(accounts);
-})
+});
+
+ipcRenderer.on('loggedIn',(event,cookie)=>{
+    document.getElementById('cookie').value = cookie;
+    document.getElementById('login').innerText = "Success!";
+});
+
+ipcRenderer.on('gameSelected',(event,link)=>{
+    document.getElementById('link').value = link;
+});
+
+ipcRenderer.on('setButtonText',(event,string)=>{
+    document.getElementById('create').innerText = string;
+});
 
 function showAccounts(accounts){
     if(!window.location.href.includes('accountManager')){
