@@ -53,7 +53,8 @@ npm run build
         - `min` & `max` amount of players
     - [ ] ping:
         - same as players: customizable order, min & max value
-    - [ ] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId)
+- [ ] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId) shortcuts
+- [ ] custom protocol launching, e.g. `rlnk://game/606849621`
 - [ ] ability to remove an account from account manager
 - [ ] better error handling
 
