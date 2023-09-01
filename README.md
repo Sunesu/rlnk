@@ -44,8 +44,9 @@ npm run build
 ## Roadmap
 - [x] alternative .NET app for lower-end devices -> [download here](https://rlnk.app/lite)
 - [x] ability to login instead of pasting an account cookie
-- [ ] user shortcuts
-- [ ] browser shortcuts
+- [x] user shortcuts 
+- [x] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId) shortcuts
+- [x] browser shortcuts
 - [ ] roblox studio shortcuts
 - [ ] Server filtering options for game shortcut:
     - [ ] playercount:
@@ -53,8 +54,6 @@ npm run build
         - `min` & `max` amount of players
     - [ ] ping:
         - same as players: customizable order, min & max value
-- [ ] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId) shortcuts
-- [ ] custom protocol launching, e.g. `rlnk://game/606849621`
 - [ ] ability to remove an account from account manager
 - [ ] better error handling
 

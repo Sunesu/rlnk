@@ -3,9 +3,13 @@ var app = new Vue({
     data: {
         type: 'game', // other values will be 'user' and 'server' for vip server
         link: '', // game link or user profile link or vip server link
+        jobid: '',
+        launch_method: 'direct',
         account: 'default',
         circularIcon: false,
         cookie: '',
+
+        showButtonFor:['game','jobid']
     },
     methods: {
         save: async function(e) {
@@ -13,6 +17,8 @@ var app = new Vue({
             ipc.send('createShortcut',{
                 'type': app.type,
                 'link': app.link,
+                'jobid': app.jobid,
+                'launch_method': app.launch_method,
                 'account': app.account,
                 'circularIcon': app.circularIcon,
                 'cookie': app.cookie

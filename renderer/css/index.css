@@ -204,6 +204,10 @@ select{
     transition: linear 0.2s;
 }
 
+select:disabled{
+    cursor: not-allowed;
+}
+
 button{
     background: linear-gradient(45deg,var(--secondary),var(--primary));
     background-size: 400% 400%;
