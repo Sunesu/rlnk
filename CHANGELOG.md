@@ -7,7 +7,7 @@ Release Notes:
   - browser shortcut
   - app shortcut
 - Added support for the `roblox://` protocol launching
-- Splitted the code across multiple files
+- Split the code across multiple files
 
 ## rlnk v1.0.1
 
