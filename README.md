@@ -47,7 +47,7 @@ npm run build
 - [x] user shortcuts 
 - [x] specific [JobId](https://create.roblox.com/docs/reference/engine/classes/DataModel#JobId) shortcuts
 - [x] browser shortcuts
-- [ ] roblox studio shortcuts
+- [x] roblox studio shortcuts
 - [ ] Server filtering options for game shortcut:
     - [ ] playercount:
         - order `ascending`/`descending`/`random`
