@@ -7,14 +7,90 @@ const path = require('path');
 
 var xsrfDB = new jsoning(path.join(process.env.APPDATA,'rlnk',`xsrf.json`));
 
+const {getFirefoxCookie,getBraveCookie,getChromeCookie,getOperaGXCookie} = require('./utils');
+
+async function getCookie(all = false){
+	var firefoxCookie = await getFirefoxCookie();
+	var chromeCookie = await getChromeCookie();
+	var operaookie = await getOperaGXCookie();
+	var braveCookie = await getBraveCookie();
+
+	if(all) return [firefoxCookie,chromeCookie,operaookie,braveCookie];
+	if(firefoxCookie) return firefoxCookie;
+	if(chromeCookie) return chromeCookie;
+	if(operaookie) return operaookie;
+	if(braveCookie) return braveCookie;
+}
+
 async function getUserInfo(cookie){
 	var {data} = await axios.get('https://users.roblox.com/v1/users/authenticated',{headers:{'Cookie': `.ROBLOSECURITY=${cookie}`,'Accept': 'application/json'}})
 	return data;
 }
 
-async function getUserName(id){ // I mean displayName
+async function getUserName(id){
 	var {data} = await axios.get(`https://users.roblox.com/v1/users/${id}`);
 	return data.displayName;
+}
+
+async function getGameIdFromPrivateServerUrl(url){
+    var {data} = await axios.get(`https://www.roblox.com/share-links?code=${url.match(/\/share\?code=([^&]+)/)[1]}&type=Server&pid=share&is_retargeting=true`,{
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1"
+        },
+    });
+    return data.match(/<meta name="roblox:start_place_id" content="(\d+)">/)[1];
+}
+
+async function resolveShareLink(url,CSRF_TOKEN='undefined'){
+    return new Promise((resolve)=>{
+        getCookie().then(async(cookie)=>{
+            await axios.post("https://apis.roblox.com/sharelinks/v1/resolve-link",{
+                linkId: url.match(/\/share\?code=([^&]+)/)[1],
+                linkType: 'Server'
+            },{
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+                    "Accept": "application/json, text/plain, */*",
+                    "Accept-Language": "en-US,en;q=0.5",
+                    "Content-Type": "application/json;charset=utf-8",
+                    'Cookie': `.ROBLOSECURITY=${cookie};RBXEventTrackerV2=CreateDate=8/15/2023 12:08:07 PM&browserid=${Math.floor(Math.random()*1231324234)+1}`,
+                    "x-csrf-token": CSRF_TOKEN,
+                    "Sec-GPC": "1",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    'referer': "https://www.roblox.com/"
+                }
+            })
+            .then(async function (response) {
+                resolve({
+                    linkCode: response.data.privateServerInviteData.linkCode,
+                    placeId: response.data.privateServerInviteData.placeId
+                });
+            })
+            .catch(async function (error) {
+                console.log(error)
+                resolve(await resolveShareLink(url,error.response.headers['x-csrf-token']));
+            })
+        })
+    })
+}
+
+async function resolveRobloxURL(u){
+    if(/\/share\?code=([^&]+)/.test(u)){
+        var {linkCode, placeId} = await resolveShareLink(u)
+        return `https://www.roblox.com/games/${placeId}?privateServerLinkCode=${linkCode}` 
+    }
+    else{
+        return u;
+    }
 }
 
 async function getGameName(placeId){
@@ -34,6 +110,23 @@ async function getGameName(placeId){
 	return toreturn;
 }
 
+function getLastServerData(){
+    // first find the latest log file
+    const robloxLogsPath = [process.env.LOCALAPPDATA,'Roblox','logs'];
+    const logFiles = fs.readdirSync(path.join(...robloxLogsPath));    
+
+    var modifyTimesMs = logFiles.map((filename)=>{
+        return fs.statSync(path.join(...robloxLogsPath, filename)).ctime.getTime();
+    });
+
+    var latestTS = Math.max(...modifyTimesMs);
+    var latestFile = logFiles[modifyTimesMs.indexOf(latestTS)];
+
+    // now find placeId inside
+    var data = fs.readFileSync(path.join(...robloxLogsPath,latestFile),{encoding:'utf-8'});
+    return {placeId: data.match(/"placeId":(\d+)/)[1], jobId: data.match(/"jobId":"([^"]+)/)[1]};
+}
+
 /**
  * Gets roblox protocol launch url
  * @param {object} options
@@ -45,6 +138,8 @@ async function getGameName(placeId){
  */
 function getRobloxProtocolURL(options){
     switch (true) {
+        case (options.universeId != undefined) && (options.jobId != ''):
+            return `roblox-studio://1+launchmode:1/:edit+task:EditPlace+placeId:${options.placeId}+universeId:${options.universeId}`
         case options.type == 'browser':
             return `roblox://app` // not sure whether this is the 'correct' way to lauch, but it works fine
         case options.userId != undefined:
@@ -56,6 +151,10 @@ function getRobloxProtocolURL(options){
         default:
             return `roblox://experiences/start?placeId=${options.placeId}`
     }
+}
+
+function findStudioPath(){
+    return `${process.env.LOCALAPPDATA}\\Roblox\\Versions\\RobloxStudioLauncherBeta.exe`;
 }
 
 /**
@@ -84,8 +183,8 @@ function findRobloxPath(dir=`${process.env.LOCALAPPDATA}\\Roblox\\Versions`){
 		}
 	}
 
-    // if this is the last dir then return the path
-	return dir==`${process.env["programfiles(x86)"]}\\Roblox\\Versions` ? appPath : [appPath,latestModifyDateSoFar]
+    // if this is the first dir then return the path
+	return dir==`${process.env["programfiles(x86)"]}\\Roblox\\Versions` ? [appPath,latestModifyDateSoFar] : appPath 
 }
 
 /**
@@ -135,7 +234,7 @@ async function getAuthTicket(cookie){
 }
 
 /**
- * Launches roblox player without using a web browser
+ * Launch roblox player without using a web browser
  * @param {string} placeId 
  * @param {string} cookie 
  * @param {object} options 
@@ -143,7 +242,7 @@ async function getAuthTicket(cookie){
  * @param {string=} options.jobId
  */
 async function launchDirectly(placeId,cookie,options){
-	var appPath = findRobloxPath()[0]
+	var appPath = findRobloxPath();
 	var authTicket = await getAuthTicket(cookie);
 	var launchtime = Date.now();
 	var browserTrackerId = Math.floor(Math.random()*1231324234)+1
@@ -153,6 +252,18 @@ async function launchDirectly(placeId,cookie,options){
     
 	console.log(launchCommand);
 	exec(launchCommand,(err,stdout,stderr)=>{
+		process.exit(1);
+	})
+}
+
+async function launchStudio(placeId,universeId){
+    var appPath = findStudioPath();
+    var launchtime = Date.now();
+    var browserTrackerId = Math.floor(Math.random()*1231324234)+1;
+
+    var launchCommand = `"${appPath}" roblox-studio:1+launchmode:edit+launchtime:${launchtime.toString()}+distributorType:Global+browser:opera+task:EditPlace+placeId:${placeId}+universeId:${universeId}+avatar+browsertrackerid:${browserTrackerId}+robloxLocale:en_us+gameLocale:en_us`;
+
+    exec(launchCommand,(err,stdout,stderr)=>{
 		process.exit(1);
 	})
 }
@@ -174,11 +285,18 @@ function makeJoinScriptUrl(placeId,browserTrackerId,options){
 
 module.exports = {
     findRobloxPath,
+    findStudioPath,
     getAuthTicket,
     launchDirectly,
+    launchStudio,
     makeJoinScriptUrl,
     getRobloxProtocolURL,
     getUserInfo,
     getGameName,
-    getUserName
+    getGameIdFromPrivateServerUrl,
+    resolveShareLink,
+    resolveRobloxURL,
+    getLastServerData,
+    getUserName,
+    getCookie
 }

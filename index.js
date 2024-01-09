@@ -8,39 +8,24 @@ const {exec} = require('child_process');
 const crypto = require('crypto');
 const jsoning = require('jsoning');
 
-const {reverseObject,getFirefoxCookie,getBraveCookie,getChromeCookie,getOperaGXCookie} = require('./src/utils');
-const {launchDirectly,getRobloxProtocolURL,getUserInfo,getGameName,getUserName} = require('./src/roblox');
+const {reverseObject} = require('./src/utils');
+const {getCookie,launchDirectly,getRobloxProtocolURL,getUserInfo,getGameName,getUserName,launchStudio,getGameIdFromPrivateServerUrl,resolveShareLink,resolveRobloxURL,getLastServerData} = require('./src/roblox');
 const shortcutUtils = require('./src/shortcut');
 
 var cookiesDB = new jsoning(path.join(process.env.APPDATA,app.name,`cookies.json`));
 
 var win;
 var runArgs = process.argv[1]?.split(';') || [];
-
 console.log(runArgs);
 
+// copy chromiumUserData folder (to allow opening roblox-player: protocol links)
 fs.stat(path.join(process.env.APPDATA,app.name,'chromiumUserData'),(err,stat)=>{
 	if(err === 'ENOENT'){
 		exec(`copy ${path.join(__dirname,'chromiumUserData')} ${path.join(process.env.APPDATA,app.name,'chromiumUserData')}`,(err,stdout,stderr)=>{
 			console.log('DONE!');
-			//yes
 		})
 	}
-})
-
-async function getCookie(all = false){
-	var firefoxCookie = await getFirefoxCookie();
-	var chromeCookie = await getChromeCookie();
-	var operaookie = await getOperaGXCookie();
-	var braveCookie = await getBraveCookie();
-
-	if(all) return [firefoxCookie,chromeCookie,operaookie,braveCookie];
-	if(firefoxCookie) return firefoxCookie;
-	if(chromeCookie) return chromeCookie;
-	if(operaookie) return operaookie;
-	if(braveCookie) return braveCookie;
-	
-}
+});
 
 function showErrorWindow(str1,str2){
 
@@ -60,10 +45,6 @@ function showErrorWindow(str1,str2){
 }
 
 function createWindow () {
-
-	var X = screen.getPrimaryDisplay().size.width
-	var Y = screen.getPrimaryDisplay().size.height
-	
 	// create main browser window
 	win = new BrowserWindow({
 		//titleBarStyle: 'hidden',
@@ -80,9 +61,7 @@ function createWindow () {
 	win.webContents.on('did-finish-load', function() {
 		win.show(); 
 	});
-
 }
-
 
 
 if (runArgs.length === 1 || runArgs.length > 3) {
@@ -100,9 +79,16 @@ else if(runArgs.length){
         if(runArgs[0]!='jobid' && runArgs.length === 3) robloxCookie = cookiesDB.get(runArgs[2]);
 
 		var id = runArgs[1].match(/\/(\d+)/)?.[1];
-		var privateServerLinkCode = runArgs[1].match(/privateServerLinkCode=(\S+)/)?.[1] || undefined;
+		var privateServerLinkCode = runArgs[1]
+        .replace('?code=','?privateServerLinkCode=')
+        .match(/privateServerLinkCode=(\S+)/)?.[1] || undefined;
 
         switch (runArgs[0]) {
+            case 'lastplace':
+                const {placeId,jobId} = getLastServerData();
+                return launchDirectly(placeId,robloxCookie,{jobId: jobId});
+            case 'studio':
+                return launchStudio(id,runArgs[2]);
             case 'browser':
                 return openBrowser(robloxCookie);
             case 'user':
@@ -110,6 +96,9 @@ else if(runArgs.length){
             case 'jobid':
                 return launchDirectly(id,robloxCookie,{jobId:runArgs[2]});
             case 'server':
+                if(runArgs[1].includes('?code=')){ // new private server links
+                    var {linkCode: privateServerLinkCode, placeId: id} = await resolveShareLink(runArgs[1]);
+                }
                 return launchDirectly(id,robloxCookie,{privateServerLinkCode: privateServerLinkCode});
             case 'game':
                 return launchDirectly(id,robloxCookie,{});
@@ -118,24 +107,23 @@ else if(runArgs.length){
 	});
     
 }
-else{
-	app.whenReady().then(createWindow)
+else {
+	app.whenReady().then(createWindow);
 }
   
-if (process.platform === 'win32')
-{
-	app.setAppUserModelId(app.name)
+if (process.platform === 'win32') {
+	app.setAppUserModelId(app.name);
 }
 
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
-	  app.quit()
+	  app.quit();
 	}
 })
 
 app.on('activate', () => {
 	if ((BrowserWindow.getAllWindows().length === 0) && runArgs.length === undefined) {
-	  createWindow()
+	  createWindow();
 	}
 })
 
@@ -148,10 +136,14 @@ async function checkAccountMetadata(id){
 
 async function getNameForAShortcut(type,id){
     switch (type) {
+        case 'lastplace':
+            return 'Join last server';
         case 'browser':
             return 'Roblox';
         case 'user':
             return 'Join ' + (await getUserName(id));
+        case 'studio':
+            return 'Edit ' + (await getGameName(id));
         default:
             return getGameName(id);
     }
@@ -159,6 +151,8 @@ async function getNameForAShortcut(type,id){
 
 async function getIconForAShortcut(type,id,isCircular=false){
     switch (type) {
+        case 'lastplace':
+            return 'https://rlnk.app/img/icon.png'
         case 'user':
         case 'browser':
             var {data} = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${id}&size=180x180&format=Png&isCircular=${isCircular}`);
@@ -172,17 +166,25 @@ async function getIconForAShortcut(type,id,isCircular=false){
 async function getIdFromShortcutData(shd){
     // for browser shortcut, get userId from roblox api/json file
     // for other ones, extract it from game/user url
+    // TODO new private server links
     return shd.type == 'browser' 
     ? (
-        shd.cookie != ''
+        shd.cookie != '' // new cookie
         ? (await getUserInfo(shd.cookie)).id 
         : (
-            shd.account !== 'default'
-            // account was saved before, so get user info from json file
+            shd.account !== 'default' // account was saved before, so get user info from json file
             ? await cookiesDB.get(shd.account.toString()+'_metadata').id
-            : (await getUserInfo(await getCookie())).id
+            : (await getUserInfo(await getCookie())).id // else get cookie from web browser
         ))
-    : shd.link.match(/\/(\d+)/)[1];
+    : (
+        shd.type == 'server' && shd.link.match(/\/share\?code=[^&]+/)
+        ? await getGameIdFromPrivateServerUrl(shd.link)
+        : (
+            shd.type == 'lastplace'
+            ? 'LASTPLACE'
+            : shd.link.match(/\/(\d+)/)[1]
+        )
+    )
 }
 
 function openBrowser(cookie){
@@ -292,6 +294,8 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
 	
     // this can be a placeId or userId
 	const objectId = await getIdFromShortcutData(shortcutData);
+    // game/server/user url
+    const robloxURL = await resolveRobloxURL(shortcutData.link);
 
     // paths
 	const iconPNGPath = path.join(process.env.APPDATA,app.name,`${shortcutData.type.toUpperCase()}_${objectId}.png`);
@@ -306,13 +310,17 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
     var isDirect = (shortcutData.launch_method == 'direct');
 
     // shortcut data
-    var shortcutTarget = isDirect ? mainEXEPath : getRobloxProtocolURL({type: shortcutData.type, placeId: objectId, privateServerLinkCode: shortcutData.link.match(/privateServerLinkCode=(\S+)/)?.[1],jobId: shortcutData.jobid, userId: shortcutData.type == 'user' ? objectId : undefined})
-	var shortcutArgs =  isDirect ? `${shortcutData.type};${shortcutData.link}` : '';
+    var shortcutTarget = isDirect ? mainEXEPath : getRobloxProtocolURL({type: shortcutData.type, placeId: objectId, privateServerLinkCode: robloxURL.match(/privateServerLinkCode=(\S+)/)?.[1], jobId: shortcutData.jobid, universeId: shortcutData.universeid, userId: shortcutData.type == 'user' ? objectId : undefined})
+	var shortcutArgs = isDirect ? `${shortcutData.type};${robloxURL}` : '';
 	var shortcutPath =  path.join(process.env.USERPROFILE,'Desktop',`${gameName}.${isDirect?'lnk':'url'}`);
 
     // add jobid to args
     if(shortcutData.jobid != '' && shortcutArgs != ''){
         shortcutArgs+=`;${shortcutData.jobid}`;
+    }
+    // add universeid to args
+    else if(shortcutData.universeid != '' && shortcutArgs != ''){
+        shortcutArgs+=`;${shortcutData.universeid}`;
     }
 
 	// get icon
@@ -322,13 +330,13 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
         // if new account then get user info
 		var {id,displayName} = await getUserInfo(shortcutData.cookie);
 		await cookiesDB.set(id.toString(),shortcutData.cookie);
-		shortcutArgs = `${shortcutData.type};${shortcutData.link};${id}`;
+		shortcutArgs += `;${id}`;
 		shortcutPath = path.join(process.env.USERPROFILE,'Desktop',`${gameName} - ${displayName}.lnk`);
 	}
 	else if(shortcutData.account !== 'default'){
         // account was saved before, so get user info from json file
 		var meta = await cookiesDB.get(shortcutData.account.toString()+'_metadata');
-		shortcutArgs = `${shortcutData.type};${shortcutData.link};${meta.id}`;
+		shortcutArgs += `;${meta.id}`;
 		shortcutPath = path.join(process.env.USERPROFILE,'Desktop',`${gameName} - ${meta.displayName}.lnk`);
 	}
 
@@ -341,7 +349,7 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
 	});
 
 	download_req.pipe(fs.createWriteStream(iconPNGPath));
-	
+
 	download_req.on('end', function () { 
         // convert icon
 		pngToIco(iconPNGPath).then(buf => {
@@ -350,7 +358,7 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
 				if(err) return err;
                 // copy dummy exe file
 				exec(`copy /Y "${path.join(__dirname,'empty.exe')}" "${iconEXEPath}"`,(err,stdout,stderr)=>{ 
-                     // change exe icon
+                    // change exe icon
 					exec(`"${path.join(__dirname,'rcedit')}" "${iconEXEPath}" --set-icon "${iconICOPath}"`,(err,stdout,stderr)=>{
 						console.log(`rcedit "${iconEXEPath}" --set-icon "${iconICOPath}"`);
                         shortcutUtils.create({
@@ -361,9 +369,7 @@ ipcMain.on('createShortcut', async function (event,shortcutData) {
                         });
 					});
 				});
-				//exec(`rcedit "${path.join(process.env.APPDATA,app.name,`GAME_${placeId}.exe`)}" --set-icon "${path.join(process.env.APPDATA,app.name,`GAME_${placeId}.ico`)}"`)
 			});
-			
 		})
 		.catch(console.error);
 	});

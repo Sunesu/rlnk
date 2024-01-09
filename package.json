@@ -1,7 +1,7 @@
 {
   "name": "rlnk",
   "productName": "rlnk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Shortcuts for Roblox games",
   "main": "index.js",
   "scripts": {

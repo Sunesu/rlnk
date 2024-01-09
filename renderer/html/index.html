@@ -20,12 +20,16 @@
                 <option value="jobid">JobID</option>
                 <option value="user">User</option>
                 <option value="browser">Browser/App</option>
+                <option value="studio">Studio</option>
+                <option value="lastplace">Last place</option>
             </select>
         </div>
         <!-- game / server url -->
         <transition name="fade">
-            <div class="setting" v-if="type != 'browser'">
-                <label for="link">{{ type != 'jobid' ? type.charAt(0).toUpperCase()+type.substring(1) : 'Game' }} link</label>
+            <!-- don't show game url input for browser and lastplace sh -->
+            <div class="setting" v-if="(type != 'browser') && (type != 'lastplace')">
+                <!-- show 'Game link' for jobid and studio shortcuts, for every other one '${type} link' -->
+                <label for="link">{{ type != 'jobid' && type != 'studio'  ? type.charAt(0).toUpperCase()+type.substring(1) : 'Game' }} link</label>
                 <div>
                     <input type="text" name="link" id="link" :placeholder="type == 'server' ? 'paste server link' : 'paste or...'" v-model="link" :class="{'width-50':(showButtonFor.indexOf(type) > -1),'width-100':(showButtonFor.indexOf(type) == -1)}">
                     <button v-if="showButtonFor.indexOf(type) > -1" id="browseGames" @click="browseGames($event)" style="margin-left: .5rem; width: calc(50% - .5rem);">Browse</button>
@@ -41,19 +45,29 @@
                 </div>
             </div>
         </transition>
+        <!-- universeId -->
+        <transition name="fade">
+            <div class="setting"  v-if="type=='studio'">
+                <label for="universeid">universeId</label>
+                <div>
+                    <input type="text" name="universeid" id="universeid" placeholder="universe id..." v-model="universeid" class="width-100">
+                </div>
+            </div>
+        </transition>
         <!-- launch method: direct or roblox:// protocol -->
         <div class="setting">
             <label for="launch_method">Launch method</label>
             <select name="launch_method" id="launch_method" v-model="launch_method">
                 <option value="direct">{{ type == 'browser' ? 'Direct (Browser)' : 'Direct' }}</option>
-                <option value="roblox_protocol">{{ type == 'browser' ? 'roblox:// protocol (App)' : 'roblox:// protocol' }}</option>
+                <!-- don't show roblox protocol option for lastplace sh -->
+                <option v-if="type != 'lastplace'" value="roblox_protocol">{{ type == 'browser' ? 'roblox:// protocol (App)' : 'roblox:// protocol' }}</option>
             </select>
         </div>
         <!-- account settings (direct launching only)-->
         <!-- account selection list -->
         <div class="setting">
             <label for="account">Account</label>
-            <select name="account" id="account" v-model="account" :disabled="launch_method=='direct' ? false : true">
+            <select name="account" id="account" v-model="account" :disabled="launch_method=='roblox_protocol' || type=='studio' ? true : false">
                 <option value="default">Loading...</option>
                 <option value="custom">Add account...</option>
             </select>

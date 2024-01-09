@@ -4,12 +4,13 @@ var app = new Vue({
         type: 'game', // other values will be 'user' and 'server' for vip server
         link: '', // game link or user profile link or vip server link
         jobid: '',
+        universeid: '',
         launch_method: 'direct',
         account: 'default',
         circularIcon: false,
         cookie: '',
 
-        showButtonFor:['game','jobid']
+        showButtonFor:['game','jobid','studio']
     },
     methods: {
         save: async function(e) {
@@ -18,6 +19,7 @@ var app = new Vue({
                 'type': app.type,
                 'link': app.link,
                 'jobid': app.jobid,
+                'universeid': app.universeid,
                 'launch_method': app.launch_method,
                 'account': app.account,
                 'circularIcon': app.circularIcon,

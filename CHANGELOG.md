@@ -1,3 +1,11 @@
+## rlnk v1.0.3
+
+Release Notes:
+- studio shortcuts (`roblox-studio://` protocol)
+- last place shortcuts (to rejoin the last server)
+- fixed a bug that has been preventing shortcut creation
+- added support for new vip server links
+  
 ## rlnk v1.0.2
 
 Release Notes:
