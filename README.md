@@ -1,3 +1,4 @@
+![image](https://rlnk.app/img/banner.png)
 # rlnk
 An Electron app that allows you to create shortcuts for your favorite roblox games.
 
