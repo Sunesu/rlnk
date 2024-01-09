@@ -4,14 +4,18 @@ An Electron app that allows you to create shortcuts for your favorite roblox gam
 
 ## Features
 - Easy to use
-    - No need to copy your roblox cookie - rlnk will extract it automatically
+    - No need to copy/paste your roblox cookie - rlnk will find it automatically
+    - Game selection & login via roblox website
     - Added accounts are saved for easy access later
-- Multiple shortcuts types
+- Multiple shortcuts types:
     - game
     - private server
-    - user *(coming soon)*
-- Ability to launch game via CLI: `/path/to/rlnk game;https://www.roblox.com/games/606849621/Jailbreak`
-- Nice account manager
+    - user 
+    - jobid
+    - browser
+    - last place
+- CLI usage: `/path/to/rlnk game;https://www.roblox.com/games/606849621/Jailbreak`
+- Account manager
 
 ## Installation
 Windows installer can be found on [our website](https://rlnk.app)
